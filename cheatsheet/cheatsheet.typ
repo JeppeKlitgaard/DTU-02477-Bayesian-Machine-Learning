@@ -48,6 +48,7 @@
 #let tr = math.op("tr")
 #let span = math.op("span")
 #let dist = math.op("dist")
+#let argmax = math.op("argmax")
 
 #let Ber = math.op("Ber")  // Bernoulli distribution
 #let Bin = math.op("Bin")  // Binomial distribution
@@ -64,6 +65,13 @@
   show heading: box
   body
 }
+
+= Miscellaneous
+- Sigmoid: $σ(x) = (1 + e^(-x))^(-1)$
+- $hat(θ)_"MLE" = argmax_θ p(vv(y)|θ)$: Max of likelihood function
+- $hat(θ)_"MAP" = argmax_θ p(θ|vv(y))$: Max of posterior distribution
+- Plug-in estimate: Using either MAP or MLE as the parameter estimate instead of the full distribution
+  - Better alternative: posterior predictive distribution using grid approximation.
 
 = Fundamental Probability Theory
 - Product rule: $p(vv(a), vv(b)) = p(vv(b)|vv(a)) p(vv(a))$
@@ -83,6 +91,7 @@
 - Posterior, $p(vv(θ)|vv(y))$: belief about parameter $vv(θ)$ after seeing data
 - Evidence, $p(vv(y))$: probability of data $vv(y)$
 - Joint distribution, $p(vv(θ), vv(y))$: probability of both parameter $vv(θ)$ and data $vv(y)$
+- Posterior predictive distribution, $p(y^*|vv(y), vv(x), x^*)$: probability of new data $y^*$ given observed data $vv(y)$ and new input $x^*$
 
 = Distributions
 - Conjugate: A prior $p(vv(θ))$ is conjugate to a likelihood $p(vv(y)|vv(θ))$ if the posterior $p(vv(θ)|vv(y))$ is in the same family as the prior.
@@ -92,6 +101,9 @@
     - Posterior: $p(vv(θ)|vv(y)) = Beta(vv(θ)|a+y, b+N-y)$
     - Posterior mean: $𝔼[vv(θ)|vv(y)] = (a+y) / (a+b+N)$
 == Distributions Overview
+- Gaussian: _Continuous distribution over $ℝ$_
+  - $p(x|μ, σ^2) = 𝒩(x|μ, σ^2) = (1/sqrt(2 π σ^2)) e^(-(x-μ)^2/(2σ^2))$
+  - $𝔼[x] = μ$, $𝕍[x] = σ^2$
 - Bernoulli: _Binary data_, $Ω={0, 1}$
   - $p(x|θ) = Ber(x|θ) = θ^x (1-θ)^(1-x)$
   - $𝔼[x] = θ$, $𝕍[x] = θ(1-θ)$
@@ -106,3 +118,10 @@
     - Uniform prior: $Beta(θ|1,1)$
   - $𝔼[θ] = a/(a+b), quad 𝕍[θ] = (a b) / ((a+b)^2 (a+b+1))$
 
+= Techniques
+
+== Grid Approximation
++ Define grid of parameter values $vv(θ)_i = {θ_(i, 1), θ_(1, 2), ..., θ_(i, M)}$
+  - Grid is then $product_i vv(θ)_i$, the Cartesian product of the parameter discretisations
++ Evaluate posterior probability: $q(θ_k) = 1/Z p(vv(y),θ|vv(x)) = 1/Z tilde(π)_k = π_k$ where $k$ indexes the points
++ Compute normalisation constant: $Z = ∑_k tilde(π)_k$
