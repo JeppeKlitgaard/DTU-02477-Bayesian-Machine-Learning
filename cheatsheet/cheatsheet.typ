@@ -1,4 +1,4 @@
-#import "@preview/physica:0.9.5": innerproduct, super-T-as-transpose, dd, dv, pdv
+#import "@preview/physica:0.9.8": innerproduct, super-T-as-transpose, dd, dv, pdv
 #import "preamble.typ": linalg-notation
 #set page(
   margin: 0.4cm,
@@ -40,8 +40,8 @@
   it
 )
 
-#let vv = linalg-notation.with(bold: true, upright: true)
-#let mm = linalg-notation.with(bold: false, upright: false)
+#let vv = linalg-notation.with(bold: true, upright: false)
+#let mm = linalg-notation.with(bold: true, upright: true)
 #let wider = h(3em)
 
 #let diag = math.op("diag")
@@ -72,6 +72,17 @@
 - $hat(θ)_"MAP" = argmax_θ p(θ|vv(y))$: Max of posterior distribution
 - Plug-in estimate: Using either MAP or MLE as the parameter estimate instead of the full distribution
   - Better alternative: posterior predictive distribution using grid approximation.
+- Uncertainty types:
+  - Epistemic: Uncertainty about model parameters, can be reduced by more data
+  - Aleatoric: Uncertainty inherent in the data, cannot be reduced by more data
+  - Posterior captures epistemic uncertainty
+  - Likelihood captures aleatoric uncertainty
+  - Posterior predictive distribution captures both
+== Metrics
+- Mean squared error (MSE): $"MSE" = 1/N ∑_n (y_n - hat(y)_n)^2$
+- Expected log predictive density (ELPD):
+  - $"ELPD" = 1/N ∑^N_(n=1) ln p(y^*_n|vv(y), vv(x)^*)$
+  - Like MSE but takes into account the uncertainty
 
 = Fundamental Probability Theory
 - Product rule: $p(vv(a), vv(b)) = p(vv(b)|vv(a)) p(vv(a))$
@@ -89,7 +100,7 @@
   - Different types: uniform, informative, weakly informative, mathematically convenient, etc.
 - Likelihood, $p(vv(y)|vv(θ))$: probability of data $vv(y)$ given parameter $vv(θ)$
 - Posterior, $p(vv(θ)|vv(y))$: belief about parameter $vv(θ)$ after seeing data
-- Evidence, $p(vv(y))$: probability of data $vv(y)$
+- Evidence/marginal likelihood, $p(vv(y))$: probability of data $vv(y)$
 - Joint distribution, $p(vv(θ), vv(y))$: probability of both parameter $vv(θ)$ and data $vv(y)$
 - Posterior predictive distribution, $p(y^*|vv(y), vv(x), x^*)$: probability of new data $y^*$ given observed data $vv(y)$ and new input $x^*$
 
@@ -100,10 +111,14 @@
     - Likelihood: $p(vv(y)|vv(θ)) = Bin(vv(y)|N, vv(θ))$
     - Posterior: $p(vv(θ)|vv(y)) = Beta(vv(θ)|a+y, b+N-y)$
     - Posterior mean: $𝔼[vv(θ)|vv(y)] = (a+y) / (a+b+N)$
+  - (multivariate) Gaussian distribution is conjugate to itself
 == Distributions Overview
 - Gaussian: _Continuous distribution over $ℝ$_
   - $p(x|μ, σ^2) = 𝒩(x|μ, σ^2) = (1/sqrt(2 π σ^2)) e^(-(x-μ)^2/(2σ^2))$
   - $𝔼[x] = μ$, $𝕍[x] = σ^2$
+- Multivariate Gaussian: _Continuous distribution over $ℝ^D$_
+  - $p(vv(x)|vv(μ), mm(Σ)) = 𝒩(vv(x)|vv(μ), mm(Σ)) = (1/sqrt((2 π)^D det(mm(Σ)))) e^(-0.5 (vv(x)-vv(μ))^T mm(Σ)^(-1) (vv(x)-vv(μ)))$
+  - $𝔼[vv(x)] = vv(μ)$, $𝕍[vv(x)] = mm(Σ)$
 - Bernoulli: _Binary data_, $Ω={0, 1}$
   - $p(x|θ) = Ber(x|θ) = θ^x (1-θ)^(1-x)$
   - $𝔼[x] = θ$, $𝕍[x] = θ(1-θ)$
@@ -125,3 +140,27 @@
   - Grid is then $product_i vv(θ)_i$, the Cartesian product of the parameter discretisations
 + Evaluate posterior probability: $q(θ_k) = 1/Z p(vv(y),θ|vv(x)) = 1/Z tilde(π)_k = π_k$ where $k$ indexes the points
 + Compute normalisation constant: $Z = ∑_k tilde(π)_k$
+
+== Evidence Approximation
+- A method to estimate hyperparameters (prior variance, noise variance, etc.)
+- Pick the hyperparameters that maximises the marginal likelihood (MLE Type II):
+  - $α^*, β^* = argmax_(α, β) p(vv(y)|α, β) = argmax_(α, β) ln p(vv(y)|α, β)$
+- Can be extended to MAP Type II by including a hyperprior:
+  - $α^*, β^* = argmax_(α, β) p(α, β|vv(y)) = argmax_(α, β) ln p(vv(y)|α, β) + ln p(α, β)$
+= Models
+
+== Bayesian Linear Regression
+- Model: $y = ϕ(vv(x^T)) vv(w) + vv(e)$, where $e_n ∼ 𝒩(0, σ^2)$
+  - Assumptions: Gaussian prior.
+  - $β≔1/σ^2$, _"noise precision"_
+  - $ϕ(⋅)$ is basis function transformation, $vv(w)$ are regression weights
+  - May introduce design matrix $mm(Φ)$ with rows $ϕ(vv(x_n^T))$ to write as $vv(y) = mm(Φ) vv(w) + vv(e)$
+  - $hat(vv(w))_"MLE" = (mm(Φ)^T mm(Φ))^(-1) mm(Φ)^T vv(y)$
+  - Prior: $p(vv(w)) = 𝒩(vv(w)|vv(m)_0, mm(S)_0)$
+  - Posterior variance, $mm(S) = (mm(S)_0^(-1) + β mm(Φ)^T mm(Φ))^(-1)$
+  - Posterior mean, $vv(m) = mm(S) (mm(S)_0^(-1) vv(m)_0 + β mm(Φ)^T vv(y))$
+- Summary:
+  - Prior: $p(vv(w)) = 𝒩(vv(w)|vv(m)_0, mm(S)_0)$
+  - Likelihood: $p(vv(y)|vv(w)) = 𝒩(vv(y)|mm(Φ) vv(w), β^(-1) mm(I))$
+  - Posterior: $p(vv(w)|vv(y)) = 𝒩(vv(w)|vv(m), mm(S))$
+  - Evidence: $p(vv(y)|α, β) = 𝒩(vv(y)|mm(Φ) vv(m)_0, β^(-1) mm(I) + mm(Φ) α^(-1) mm(I) mm(Φ)^T)$
