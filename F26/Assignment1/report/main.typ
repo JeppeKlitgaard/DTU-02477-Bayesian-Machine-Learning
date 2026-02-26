@@ -16,8 +16,10 @@
 
 #set heading(numbering: "1.1: ", supplement: "Part")
 #show heading: it => {
-  let supp = none
-  if it.level == 1 {
+  if it.has("label") and it.label == <nonumber> {
+    it.body
+  }
+  else if it.level == 1 {
     "Part " + counter(heading).display() + it.body
   } else if it.level == 2 {
     "Task " + counter(heading).display() + it.body
@@ -26,8 +28,6 @@
   }
   
 }
-  
-#show <nonumber>: set heading(numbering: none)
 
 #set page(
   numbering: "1/1",
@@ -58,7 +58,6 @@
 #let Binomial = math.op("Binomial")
 #let Bin = math.op("Bin")
 #let Beta = math.op("Beta")
-#let EE = math.op(math.bb("E"))
 
 #align(center,
   [#text(
@@ -77,8 +76,13 @@
 - Jeppe Klitgaard <`s250250@dtu.dk`>
 - Tymoteusz Barcinski <`s221937@dtu.dk`> #h(3em) _(not taking exam)_
 
-= The Beta-Binomial Model <sec:1>
 
+// = Introduction to Report <nonumber>
+
+// Where the full calculatio
+
+#counter(heading).update(0)
+= The Beta-Binomial Model <sec:1>
 We are to investigate the sales on a website using the Beta-Binomial conjugate model as defined by the prior, $p(θ)$ and likelihood $p(y|θ)$ parameterised as:
 $
 θ &∼ Beta(a_0, b_0) &&= 1/B(a_0, b_0) θ^(a_0-1) (1-θ)^(b_0-1),\
@@ -100,7 +104,6 @@ EE[θ] = a/(a+b)
 $ <eq:beta-mean>
 
 === Beta-Binomial Model
-
 Given prior $p(θ) = Beta(a_0, b_0)$ and likelihood $p(y|θ) = Bin(N, θ)$ the posterior is given by:
 $
   p(θ|y) = Beta(θ|a_0+y, b_0 + N - y)
@@ -162,7 +165,35 @@ p(y^*=k|y)
 &= binom(N^*, k) B(k+a_0+y, N^*-k+b_0+N-y)/B(a_0 + y, b_0 + N - y)
 $
 
-TODO
+This gives the distribution shown in @fig:1_3_ppd.
+
+#figure(
+  image("output/1_3_ppd.png"),
+  caption: [
+    The probability masses of the posterior predictive distribution $p(y^*=k|y)$.
+  ]
+) <fig:1_3_ppd>
+
+== <task:1.4>
+
+We seek to find the probability that at least one of the next $N^*=20$ customers makes a purchase, that is we seek
+$
+p(y^*≥1|y) = 1-p(y^*=0|y) = 1 - 0.4456 = 0.5544 ≈ 55%
+$
+
+That is, there is a 55% chance that at least one of the 20 next potential customers will make a purchase.
+
+== <task:1.5>
+
+As also shown in @fig:1_3_ppd, we find the mean of the posterior predictive distribution to be
+$
+EE_(p(y^*|y)) [y^*] ≈ 0.8547
+$
+
+and variance to be
+$
+VV_(p(y^*|y)) [y^*] ≈ 0.9499.
+$
 
 = Linear Gaussian Systems <sec:2>
 
