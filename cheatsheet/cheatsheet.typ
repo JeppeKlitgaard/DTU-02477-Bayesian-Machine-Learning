@@ -101,8 +101,11 @@
 - Likelihood, $p(vv(y)|vv(θ))$: probability of data $vv(y)$ given parameter $vv(θ)$
 - Posterior, $p(vv(θ)|vv(y))$: belief about parameter $vv(θ)$ after seeing data
 - Evidence/marginal likelihood, $p(vv(y))$: probability of data $vv(y)$
+  - $p(vv(y)) = ∫ p(vv(y)|vv(θ)) p(vv(θ)) dif vv(θ)$
 - Joint distribution, $p(vv(θ), vv(y))$: probability of both parameter $vv(θ)$ and data $vv(y)$
-- Posterior predictive distribution, $p(y^*|vv(y), vv(x), x^*)$: probability of new data $y^*$ given observed data $vv(y)$ and new input $x^*$
+- Posterior predictive distribution, $p(y^*|vv(y), vv(x), vv(x)^*)$: probability of new data $y^*$ given observed data $vv(y)$ and new input $x^*$
+  - $p(y^*|vv(y), vv(x), vv(x)^*) = ∫ p(y^*|vv(θ), vv(x)^*) p(vv(θ)|vv(y), vv(x)) dif vv(θ)$
+  - Often dependence on $vv(x)$ is implicit or conditionally independent. so dropped.
 
 = Distributions
 - Conjugate: A prior $p(vv(θ))$ is conjugate to a likelihood $p(vv(y)|vv(θ))$ if the posterior $p(vv(θ)|vv(y))$ is in the same family as the prior.
